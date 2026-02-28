@@ -40,7 +40,7 @@ Optimized for the Kaggle **Credit Card Fraud Dataset**, but adaptable to generic
 
 ---
 
-## 📂 Project Structure
+## Project Structure
 
 ```
 fraud-detection-pipeline/
@@ -60,7 +60,7 @@ fraud-detection-pipeline/
 
 ## Methodology
 
-### 1️⃣ Benford’s Law Analysis
+### 1 Benford’s Law Analysis
 
 * Extract first digit of transaction amounts
 * Compare observed vs expected digit frequencies
@@ -74,7 +74,7 @@ Used as a screening tool for fabricated or manipulated numeric patterns.
 
 ---
 
-### 2️⃣ Supervised Fraud Classification
+### 2 Supervised Fraud Classification
 
 If fraud labels exist:
 
@@ -181,7 +181,7 @@ Then run the script — dataset downloads automatically.
 
 ---
 
-## 📈 Output Files
+## Output Files
 
 The pipeline generates:
 
