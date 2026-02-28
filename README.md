@@ -93,7 +93,7 @@ Model selection based on highest ROC-AUC.
 
 ---
 
-### 3️⃣ Unsupervised Anomaly Detection
+### 3 Unsupervised Anomaly Detection
 
 * K-Means clustering (k chosen via silhouette score)
 * Isolation Forest (top 2% anomalies by default)
@@ -103,7 +103,7 @@ Captures structural outliers independent of labels.
 
 ---
 
-### 4️⃣ Composite Risk Scoring
+### 4 Composite Risk Scoring
 
 Risk score combines normalized:
 
@@ -116,7 +116,7 @@ Transactions in the top X% (default 2%) are flagged as high-risk.
 
 ---
 
-## 📊 Example Results (Credit Card Fraud Dataset)
+## Example Results (Credit Card Fraud Dataset)
 
 * Dataset size: 284,807 transactions
 * Fraud rate: 0.17%
