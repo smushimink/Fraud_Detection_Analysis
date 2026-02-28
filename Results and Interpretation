@@ -1,0 +1,82 @@
+Pipeline Results — Forensic Accounting Interpretation
+
+The pipeline ran successfully on the full 284,807-transaction Kaggle Credit Card Fraud dataset, containing **492 confirmed frauds (0.17% fraud rate)**. Below is a structured interpretation of what the results indicate.
+
+---
+1. Benford's Law: Significant Non-Conformity
+
+This is the most striking statistical finding. The chi-square test completely rejects Benford conformity (p ≈ 0), and the MAD of **0.0209** exceeds Nigrini's **0.015** threshold for non-conformity.
+
+Digit 1 appears 35.7% of the time versus the expected **30.1%**, representing a +5.6% excess. Meanwhile, digits 2–6 are under-represented. This pattern is consistent with a dataset dominated by **small-dollar transactions** (median ≈ $22; 75% of transactions under $77.17). When transaction amounts cluster heavily within narrow low ranges, first-digit distributions naturally skew away from Benford’s Law.
+
+This is a known limitation. Benford works best on datasets spanning multiple orders of magnitude (e.g., invoices, revenue figures, expense claims). Credit card micro-transactions do not satisfy that assumption well.
+
+Interpretation:
+The Benford “failure” here reflects a **data-shape artifact**, not manipulation. In a real forensic engagement, this caveat would be documented, and Benford testing would be re-applied to higher-value subsets.
+
+---
+
+2. Supervised Models: Logistic Regression Wins on AUC
+
+| Metric    | Logistic Regression | Decision Tree |
+| --------- | ------------------- | ------------- |
+| ROC-AUC   | **0.9746**          | 0.8656        |
+| Recall    | **0.8862** (89%)    | 0.8211 (82%)  |
+| Precision | 0.0614 (6%)         | 0.1006 (10%)  |
+| F1        | 0.1149              | 0.1792        |
+
+The key trade-off is clear. Logistic Regression captures **89% of fraud cases**, but only **6% of predicted frauds are actually fraud**. Given the 0.17% base rate (≈1:580 class imbalance), this level of precision is expected. Even a high-performing classifier generates many false positives under extreme imbalance.
+
+The Decision Tree offers interpretability advantages. Variable **V14 dominates (76% feature importance)**, and the root split rule is simple:
+
+*If V14 ≤ −1.81 → investigate further.*
+
+Secondary signals include V4, V12, and V10. Because V1–V28 are PCA-anonymized, the underlying variables are not directly interpretable; however, in a real forensic setting, such dominant features would correspond to transaction velocity, merchant deviation, geographic anomaly, or behavioral pattern shifts.
+
+**Operational takeaway:**
+An AUC of 0.97 indicates strong discrimination. In practice, the decision threshold would be raised to improve precision and reduce investigator workload, accepting a modest reduction in recall.
+
+---
+
+3. Unsupervised Anomaly Detection
+
+K-Means (k = 7) identified notable structure. Cluster 2 contains only **249 transactions (0.1%)**, and Cluster 5 contains **2,456 (0.9%)**. These micro-clusters represent natural anomaly concentrations and merit targeted review.
+
+Isolation Forest captured **324 of 492 fraud cases (65.9%)** without access to labels. For a fully unsupervised model, this is strong performance and confirms that fraudulent transactions occupy structurally distinct regions of the feature space.
+
+This reinforces that fraud cases are not randomly distributed; they cluster in identifiable anomaly pockets.
+
+---
+
+4. Composite Risk Flagging: 80.7% Fraud Capture in Top 2%
+
+Flagging only the top **2% highest-risk transactions** (5,697 out of 284,807) results in:
+
+* 397 of 492 frauds captured (80.7%)**
+* Flag precision of 7.0%
+* Approximately 40× lift over the 0.17% base rate
+
+In operational terms, an investigator reviewing 5,697 transactions would uncover approximately 81% of all fraud in the dataset.
+
+The top-20 riskiest transactions show two recurring patterns:
+
+1. High-value legitimate transactions ($19k–$25k) scoring high due to extreme amount z-scores combined with elevated model probabilities.
+2. Clusters of $1.00 fraud transactions concentrated in Cluster 2, indicating suspicious micro-transaction behavior.
+
+The system therefore captures both extremes of the fraud spectrum: high-value anomalies and structured low-value fraud.
+
+---
+
+Summary Assessment
+
+| Signal              | Verdict                                                                 |
+| ------------------- | ----------------------------------------------------------------------- |
+| Benford's Law       | Non-conforming, explained by low-value clustering — not manipulation    |
+| Logistic Regression | Strong discriminator (AUC 0.975), best overall model                    |
+| Decision Tree       | More interpretable; V14 dominant fraud driver                           |
+| Isolation Forest    | 66% unsupervised fraud capture — structural separability confirmed      |
+| Composite Risk Flag | **Top 2% captures 81% of fraud at 40× lift** — operationally actionable |
+
+The 95 missed fraud cases (19.3%) likely resemble legitimate spending behavior and would require additional contextual features—such as cardholder history, merchant risk scores, or velocity metrics—to detect.
+
+Overall, the pipeline demonstrates strong statistical discrimination, meaningful anomaly structure, and highly efficient risk-based triage suitable for forensic accounting and fraud operations use.
